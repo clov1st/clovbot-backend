@@ -20,7 +20,7 @@ ClovBot Backend adalah API server open-source yang dirancang untuk menjadi tulan
 
 ## 📁 Struktur Folder
 
-```
+````
 
 .
 ├── models/          # Skema database (User, Bot, Command, Template)
@@ -40,7 +40,7 @@ ClovBot Backend adalah API server open-source yang dirancang untuk menjadi tulan
    ```bash
    git clone https://github.com/clov1st/clovbot-backend.git
    cd clovbot-backend
-````
+   ```
 
 2. Install dependencies:
 
