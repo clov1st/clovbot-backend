@@ -1,0 +1,11 @@
+node_modules
+bots
+CLOVBOT-BASE
+sessions
+test
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.cursor
