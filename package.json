@@ -26,6 +26,8 @@
     "pm2": "^6.0.8",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }

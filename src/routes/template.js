@@ -3,7 +3,29 @@ const router = express.Router();
 const { Template } = require('../models');
 const authMiddleware = require('../utils/authMiddleware');
 
-// Tambah template
+/**
+ * @swagger
+ * /template/add:
+ *   post:
+ *     summary: Tambah template baru
+ *     tags: [Template]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               description: { type: string }
+ *               commands: { type: array, items: { type: string } }
+ *               isDefault: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Template berhasil dibuat
+ */
 router.post('/template/add', authMiddleware, async (req, res) => {
   try {
     const { name, description, commands, isDefault } = req.body;
@@ -14,7 +36,30 @@ router.post('/template/add', authMiddleware, async (req, res) => {
   }
 });
 
-// Edit template
+/**
+ * @swagger
+ * /template/edit:
+ *   put:
+ *     summary: Edit template
+ *     tags: [Template]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id: { type: integer }
+ *               name: { type: string }
+ *               description: { type: string }
+ *               commands: { type: array, items: { type: string } }
+ *               isDefault: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Template berhasil diupdate
+ */
 router.put('/template/edit', authMiddleware, async (req, res) => {
   try {
     const { id, name, description, commands, isDefault } = req.body;
@@ -31,7 +76,26 @@ router.put('/template/edit', authMiddleware, async (req, res) => {
   }
 });
 
-// Hapus template
+/**
+ * @swagger
+ * /template/delete:
+ *   delete:
+ *     summary: Hapus template
+ *     tags: [Template]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Template berhasil dihapus
+ */
 router.delete('/template/delete', authMiddleware, async (req, res) => {
   try {
     const { id } = req.body;
@@ -44,7 +108,18 @@ router.delete('/template/delete', authMiddleware, async (req, res) => {
   }
 });
 
-// List template
+/**
+ * @swagger
+ * /listtemplates:
+ *   get:
+ *     summary: List semua template
+ *     tags: [Template]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List template
+ */
 router.get('/listtemplates', authMiddleware, async (req, res) => {
   try {
     const templates = await Template.findAll();

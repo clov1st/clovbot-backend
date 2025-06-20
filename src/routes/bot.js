@@ -10,9 +10,29 @@ const fs = require('fs-extra');
 const path = require('path');
 const { exec } = require('child_process');
 const pm2 = require('pm2');
-const { body, validationResult } = require('express-validator');
 
-// Endpoint untuk koneksi WhatsApp (generate QR)
+
+/**
+ * @swagger
+ * /connect:
+ *   post:
+ *     summary: Koneksi ke WhatsApp dan dapatkan QR code
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Status koneksi atau QR code
+ */
 router.post('/connect', authMiddleware, async (req, res) => {
   const { sessionId } = req.body;
   let sent = false;
@@ -46,7 +66,27 @@ router.post('/connect', authMiddleware, async (req, res) => {
   }
 });
 
-// Endpoint untuk disconnect WhatsApp dan hapus session
+/**
+ * @swagger
+ * /disconnect:
+ *   post:
+ *     summary: Putuskan koneksi WhatsApp dan hapus session
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Session berhasil dihapus
+ */
 router.post('/disconnect', authMiddleware, async (req, res) => {
   const { sessionId } = req.body;
   try {
@@ -61,7 +101,25 @@ router.post('/disconnect', authMiddleware, async (req, res) => {
   }
 });
 
-// Endpoint status koneksi WhatsApp
+/**
+ * @swagger
+ * /status:
+ *   get:
+ *     summary: Cek status koneksi WhatsApp
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: sessionId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Session ID bot
+ *     responses:
+ *       200:
+ *         description: Status koneksi
+ */
 router.get('/status', authMiddleware, async (req, res) => {
   const { sessionId } = req.query;
   try {
@@ -72,7 +130,27 @@ router.get('/status', authMiddleware, async (req, res) => {
   }
 });
 
-// Jalankan bot dengan PM2
+/**
+ * @swagger
+ * /runbot:
+ *   post:
+ *     summary: Jalankan bot dengan PM2
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Bot berhasil dijalankan
+ */
 router.post('/runbot', authMiddleware, async (req, res) => {
   const { sessionId } = req.body;
   try {
@@ -111,7 +189,27 @@ router.post('/runbot', authMiddleware, async (req, res) => {
   }
 });
 
-// Stop bot dengan PM2
+/**
+ * @swagger
+ * /stopbot:
+ *   post:
+ *     summary: Hentikan bot dengan PM2
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Bot berhasil dihentikan
+ */
 router.post('/stopbot', authMiddleware, async (req, res) => {
   const { sessionId } = req.body;
   try {
@@ -129,64 +227,92 @@ router.post('/stopbot', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/createbot',
-  authMiddleware,
-  [
-    body('name').isString().isLength({ min: 3, max: 50 }),
-    body('ownerName').isString().isLength({ min: 3, max: 50 }),
-    body('ownerNumber').isString().matches(/^\d{10,15}$/),
-    body('botNumber').isString().matches(/^\d{10,15}$/),
-    body('prefix').isString().isLength({ min: 1, max: 3 }),
-    body('commands').isArray().notEmpty(),
-    // body('templateId').optional().isInt(),
-  ],
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+/**
+ * @swagger
+ * /createbot:
+ *   post:
+ *     summary: Membuat bot baru
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               ownerName: { type: string }
+ *               ownerNumber: { type: string }
+ *               botNumber: { type: string }
+ *               prefix: { type: string }
+ *               commands: { type: array, items: { type: string } }
+ *               templateId: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Bot berhasil dibuat
+ */
+router.post('/createbot', authMiddleware, async (req, res) => {
+  try {
+    const { name, ownerName, ownerNumber, botNumber, prefix, commands, templateId } = req.body;
+    const ownerId = req.user.id; // dari JWT
+
+    // Generate sessionId unik untuk bot ini
+    const sessionId = uuidv4();
+
+    // Jika pakai template, ambil daftar command dari template
+    let finalCommands = commands;
+    if (templateId) {
+      const template = await Template.findByPk(templateId);
+      if (!template) return res.status(404).json({ error: 'Template tidak ditemukan' });
+      finalCommands = template.commands;
     }
-    next();
-  },
-  async (req, res) => {
-    try {
-      const { name, ownerName, ownerNumber, botNumber, prefix, commands, templateId } = req.body;
-      const ownerId = req.user.id; // dari JWT
 
-      // Generate sessionId unik untuk bot ini
-      const sessionId = uuidv4();
+    // Tentukan folderPath bot (misal: /bots/bot-<sessionId>)
+    const folderPath = `bots/bot-${sessionId}`;
 
-      // Jika pakai template, ambil daftar command dari template
-      let finalCommands = commands;
-      if (templateId) {
-        const template = await Template.findByPk(templateId);
-        if (!template) return res.status(404).json({ error: 'Template tidak ditemukan' });
-        finalCommands = template.commands;
-      }
+    // Simpan ke database
+    const bot = await Bot.create({
+      name,
+      ownerId,
+      ownerName,
+      ownerNumber,
+      botNumber,
+      prefix,
+      sessionId,
+      commands: finalCommands,
+      templateId: templateId || null,
+      folderPath
+    });
 
-      // Tentukan folderPath bot (misal: /bots/bot-<sessionId>)
-      const folderPath = `bots/bot-${sessionId}`;
-
-      // Simpan ke database
-      const bot = await Bot.create({
-        name,
-        ownerId,
-        ownerName,
-        ownerNumber,
-        botNumber,
-        prefix,
-        sessionId,
-        commands: finalCommands,
-        templateId: templateId || null,
-        folderPath
-      });
-
-      res.json({ message: 'Bot berhasil dibuat', bot });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
+    res.json({ message: 'Bot berhasil dibuat', bot });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
+/**
+ * @swagger
+ * /setupbot:
+ *   post:
+ *     summary: Setup folder dan konfigurasi bot
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Bot berhasil disetup
+ */
 router.post('/setupbot', authMiddleware, async (req, res) => {
   try {
     const { sessionId } = req.body;
@@ -248,6 +374,25 @@ router.post('/setupbot', authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /botstatus:
+ *   get:
+ *     summary: Cek status bot di PM2
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: sessionId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Session ID bot
+ *     responses:
+ *       200:
+ *         description: Status bot
+ */
 router.get('/botstatus', authMiddleware, async (req, res) => {
   const { sessionId } = req.query;
   pm2.connect((err) => {

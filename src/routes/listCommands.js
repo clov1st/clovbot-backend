@@ -6,6 +6,18 @@ const { Command } = require('../models');
 const authMiddleware = require('../utils/authMiddleware');
 const multer = require('multer');
 
+/**
+ * @swagger
+ * /listcommand:
+ *   get:
+ *     summary: List semua command yang tersedia
+ *     tags: [Command]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List command
+ */
 router.get('/listcommand', authMiddleware, async (req, res) => {
   try {
     const commands = await Command.findAll();
@@ -34,7 +46,30 @@ const upload = multer({
   }
 });
 
-// POST /api/addcommand (upload file .js)
+/**
+ * @swagger
+ * /addcommand:
+ *   post:
+ *     summary: Tambah command custom (upload file .js)
+ *     tags: [Command]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *               commandFile:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Command berhasil diupload
+ */
 router.post('/addcommand', authMiddleware, upload.single('commandFile'), async (req, res) => {
   try {
     const { description } = req.body;
@@ -56,6 +91,27 @@ router.post('/addcommand', authMiddleware, upload.single('commandFile'), async (
   }
 });
 
+/**
+ * @swagger
+ * /deletecommand:
+ *   delete:
+ *     summary: Hapus command custom
+ *     tags: [Command]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Command berhasil dihapus
+ */
 router.delete('/deletecommand', authMiddleware, async (req, res) => {
   const { name } = req.body;
   try {
