@@ -19,7 +19,7 @@ ClovBot Backend adalah API server open-source yang dirancang untuk menjadi tulan
 - 🧠 **Multi-Bot Support**: Menjalankan banyak bot secara paralel.
 
 ## 📁 Struktur Folder
-
+tolll
 ```
 
 .
