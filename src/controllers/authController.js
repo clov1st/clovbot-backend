@@ -33,7 +33,11 @@ exports.login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: 'Password salah' });
 
-    const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '1d' }
+    );
     res.json({ message: 'Login berhasil', token });
   } catch (err) {
     res.status(400).json({ error: err.message });

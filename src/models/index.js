@@ -17,7 +17,8 @@ const User = sequelize.define('User', {
   username: { type: DataTypes.STRING, unique: true, allowNull: false },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
   phone: { type: DataTypes.STRING, unique: true, allowNull: false },
-  password: { type: DataTypes.STRING, allowNull: false }
+  password: { type: DataTypes.STRING, allowNull: false },
+  role: { type: DataTypes.STRING, defaultValue: 'user' } // 'user' atau 'admin'
 });
 
 const Bot = sequelize.define('Bot', {
@@ -45,9 +46,11 @@ const BotCommand = sequelize.define('BotCommand', {
 });
 
 const Command = sequelize.define('Command', {
-  name: { type: DataTypes.STRING, unique: true, allowNull: false },
-  description: DataTypes.STRING,
-  isDefault: { type: DataTypes.BOOLEAN, defaultValue: false } // true = command dari folder, false = custom
+  name: { type: DataTypes.STRING, allowNull: false, unique: true },
+  description: { type: DataTypes.STRING, allowNull: false },
+  isDefault: { type: DataTypes.BOOLEAN, defaultValue: false },
+  filename: { type: DataTypes.STRING, allowNull: false }
+  // field lain?
 });
 
 const Template = sequelize.define('Template', {

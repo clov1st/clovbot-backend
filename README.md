@@ -98,6 +98,23 @@ Swagger UI menampilkan seluruh endpoint, parameter, dan response model untuk mem
   * `POST /bot/setup/:botId`
   * `POST /bot/run/:botId`
 
+### **Admin Only Endpoint**
+
+* **Command (Admin Only)**
+  * `POST /addcommanddefault`
+
+* **Template (Admin Only)**
+  * `POST /addtemplatedefault`
+
+* **Bot (Admin Only)**
+  * `GET /bot`
+
+* **User (Admin Only)**
+  * `GET /users`
+
+* **Analytics (Admin Only)**
+  * `GET /analytics`
+
 ## 🧬 Teknologi yang Digunakan
 
 * **Node.js + Express** — Backend framework

@@ -10,6 +10,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { exec } = require('child_process');
 const pm2 = require('pm2');
+const adminOnly = require('../utils/adminOnly');
 
 
 /**
@@ -404,5 +405,33 @@ router.get('/botstatus', authMiddleware, async (req, res) => {
     });
   });
 });
+
+/**
+ * @swagger
+ * /botlog:
+ *   get:
+ *     summary: Lihat log bot
+ *     tags: [Bot]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: sessionId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Session ID bot
+ *     responses:
+ *       200:
+ *         description: Log bot
+ */
+router.get('/botlog', authMiddleware, adminOnly, async (req, res) => {
+  const { sessionId } = req.query;
+  const logPath = path.join(process.env.HOME || process.env.USERPROFILE, '.pm2', 'logs', `bot-${sessionId}-out.log`);
+  if (!fs.existsSync(logPath)) return res.status(404).json({ error: 'Log file not found' });
+  const logContent = fs.readFileSync(logPath, 'utf-8');
+  res.json({ log: logContent });
+});
+
 
 module.exports = router;

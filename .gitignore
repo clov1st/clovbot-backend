@@ -3,6 +3,7 @@ bots
 CLOVBOT-BASE
 sessions
 test
+clovbot-frontend
 .env
 .env.local
 .env.development.local
