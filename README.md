@@ -72,6 +72,47 @@ GET /api-docs
 
 Swagger UI menampilkan seluruh endpoint, parameter, dan response model untuk memudahkan integrasi dengan aplikasi frontend/mobile.
 
+---
+
+## 🧪 Testing Otomatis
+
+Untuk memudahkan pengujian seluruh fitur backend, tersedia script testing yang bisa dijalankan langsung dari command line.
+
+### 1. Registrasi Admin via CLI
+
+Jalankan perintah berikut untuk membuat user admin secara interaktif:
+```bash
+node create-user-admin.js
+```
+Script ini akan meminta input username admin dan data lain yang diperlukan.
+
+### 2. Testing Seluruh Endpoint (Admin & User)
+
+- **Testing seluruh endpoint sebagai admin:**
+  ```bash
+  node testAll-admin.js
+  ```
+  Script ini akan:
+  - Membuat user admin di database
+  - Melakukan login admin
+  - Mengetes seluruh endpoint admin (command, template, bot, user, analytics, dsb)
+  - Menampilkan hasil setiap step di console
+
+- **Testing seluruh endpoint sebagai user:**
+  ```bash
+  node testAll-user.js
+  ```
+  Script ini akan:
+  - Melakukan registrasi user baru
+  - Login user
+  - Mengetes seluruh endpoint user (command, template, bot, dsb)
+  - Menampilkan hasil setiap step di console
+
+> **Catatan:**  
+> Jika ada data/file yang sudah ada sebelumnya (misal: command atau template dengan nama sama), beberapa step akan gagal karena validasi unik. Hapus data lama atau gunakan nama berbeda untuk pengujian berulang.
+
+---
+
 ## 🧪 Contoh Endpoint
 
 * **Auth**
